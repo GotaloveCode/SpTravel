@@ -1,0 +1,44 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" href="/travelRequest/SiteAssets/TR/css/fontello.css">
+
+<div class="row">
+    <div class="container">
+        <div class="card" id="app">
+            <div class="card-header">
+                <h3 class="card-title">Approvals (<span v-text="count">0</span>)</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-responsive">
+                    <thead>
+                    <tr>
+                        <td>Request ID</td>
+                        <td>User Name</td>
+                        <td>Reason For Travel</td>
+                        <td>Per Diem</td>
+                        <td>Actions</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in travels">
+                        <td v-text="item.Title"></td>
+                        <td v-text="item.Traveller.Title"></td>
+                        <td v-text="item.TravelPurpose"></td>
+                        <td v-text="item.TravelAmount"></td>
+                        <td>
+                            <button class="btn btn-primary" type="button">View Details</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@latest"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"
+            integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
+    <script src="/travelRequest/SiteAssets/TR/js/batchexecutor.js"></script>
+    <script src="/travelRequest/SiteAssets/TR/js/approval.js"></script>
