@@ -2,43 +2,169 @@
       integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <link rel="stylesheet" href="/travelRequest/SiteAssets/TR/css/fontello.css">
 
-<div class="row">
+<div class="row" id="app" :class=" { 'modal-open': show }">
     <div class="container">
-        <div class="card" id="app">
+        <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Approvals (<span v-text="count">0</span>)</h3>
+                <h3 class="card-title">
+                    <a href="https://africanwildlife.sharepoint.com/travelRequest/Pages/default.aspx">Fill Out Travel
+                        Form</a> |
+                    Approvals (<span v-text="travels.length">0</span>)
+                </h3>
             </div>
             <div class="card-body">
-                <table class="table table-responsive">
-                    <thead>
-                    <tr>
-                        <td>Request ID</td>
-                        <td>User Name</td>
-                        <td>Reason For Travel</td>
-                        <td>Per Diem</td>
-                        <td>Actions</td>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="item in travels">
-                        <td v-text="item.Title"></td>
-                        <td v-text="item.Traveller.Title"></td>
-                        <td v-text="item.TravelPurpose"></td>
-                        <td v-text="item.TravelAmount"></td>
-                        <td>
-                            <button class="btn btn-primary" type="button">View Details</button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table bordered">
+                        <thead>
+                        <tr>
+                            <td>Request ID</td>
+                            <td>User Name</td>
+                            <td>Reason For Travel</td>
+                            <td>Per Diem</td>
+                            <td>Actions</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="item in travels">
+                            <td>TR<span v-text="item.Id"></span></td>
+                            <td v-text="item.Traveller.Title"></td>
+                            <td v-text="item.TravelPurpose"></td>
+                            <td v-text="item.TravelAmount"></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" @click="openModal(item.Id)" type="button">View Details</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+    <div class="modal" id="travel_modal" tabindex="-1" :class="{ in: show }" :style="modalStyle">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">TRAVEL REQUEST</h5>
+                    <button type="button" class="close text-white" @click="toggle">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5>Traveller Information</h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12"><span class="bold">TRAVEL ID: </span>
+                            <span v-text="modform.Id"></span>
+                        </div>
+                        <div class="col-md-3"><span class="bold">Traveller: </span><span
+                                v-text="modform.Traveller.Title"></span></div>
+                        <div class="col-md-3"><span class="bold">Date of Request: </span><span
+                                v-text="modform.Created"></span></div>
+                        <div class="col-md-6"><span class="bold">Reason for Travel: </span><span
+                                v-html="modform.TravelPurpose"></span></div>
+                    </div>
+                    <h5>Trip Details</h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th class="p-1">From</th>
+                                        <th>To</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Budget Code</th>
+                                        <th>Budget Manager</th>
+                                        <th>Days</th>
+                                        <th>Amount</th>
+                                    <tbody>
+                                    <tr v-for="item in itineraries">
+                                        <td class="p-1" v-text="item.From"></td>
+                                        <td class="text-right" v-text="item.To"></td>
+                                        <td class="text-right" v-text="item.StartDate"></td>
+                                        <td class="text-right" v-text="item.EndDate"></td>
+                                        <td class="text-right" v-text="item.BudgetCode"></td>
+                                        <td class="text-right" v-text="item.BudgetManager"></td>
+                                        <td class="text-right" v-text="item.Days"></td>
+                                        <td class="text-right" v-text="item.Amount"></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="7" class="text-right p-1"><b>Total:</b></td>
+                                        <td class="text-right bg-grey" v-text="modform.TravelAmount"></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <h5>Per Diem Details</h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <b>Do you require a travel advance? </b>
+                            <span v-text="getBoolEquivalent(modform.TravelAdvance)"></span>
+                        </div>
+                        <template v-if="modform.TravelAdvance">
+                            <div class="col-sm-4">
+                                <b>Amount: </b>
+                                <span v-text="modform.AdvanceAmount"></span>
+                            </div>
+                            <div class="col-sm-8">
+                                <b>Comment: </b>
+                                <span v-text="modform.AdvanceComment"></span>
+                            </div>
+                        </template>
+                    </div>
+                    <h5 class="mt-4">Logistic Details</h5>
+                    <hr>
+                    <div class="col-sm-12">
+                        <b>Do you require assistance with air travel booking? </b>
+                        <span v-text="getBoolEquivalent(modform.AirTicketBooking)"></span>
+                    </div>
+                    <template v-if="modform.AirTicketBooking">
+                        <div class="col-sm-12">
+                            <b>Comment: </b>
+                            <span v-text="modform.AirTicketBookingComment"></span>
+                        </div>
+                    </template>
+                    <div class="col-sm-12">
+                        <b>Do you require assistance with accommodation booking? </b>
+                        <span v-text="getBoolEquivalent(modform.AccomodationBooking)"></span>
+                    </div>
+                    <template v-if="modform.AccomodationBooking">
+                        <div class="col-sm-12">
+                            <b>Comment: </b>
+                            <span v-text="modform.AccomodationBookingComment"></span>
+                        </div>
+                    </template>
+                    <div class="col-sm-12">
+                        <b>Do you require company vehicle with this trip? </b>
+                        <span v-text="getBoolEquivalent(modform.CompanyVehicle)"></span>
+                    </div>
+                    <template v-if="modform.CompanyVehicle">
+                        <div class="col-sm-12">
+                            <b>Comment: </b>
+                            <span v-text="modform.CompanyVehicleComment"></span>
+                        </div>
+                    </template>
+                    <h5>Supervisor Approval</h5>
+                    <hr>
+                    <div class="col-md-4"><b>Supervisor: </b><span v-if="modform.Supervisor" v-text="modform.Supervisor.Title"></span></div>
+                    <div class="col-md-4"><b>Status: </b><span v-text="modform.Status"></span></div>
+                </div>
+            </div>
+        </div>
 
-    <script src="https://unpkg.com/vue@latest"></script>
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
-            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"
-            integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
-    <script src="/travelRequest/SiteAssets/TR/js/batchexecutor.js"></script>
-    <script src="/travelRequest/SiteAssets/TR/js/approval.js"></script>
+    </div>
+</div>
+
+<script src="https://unpkg.com/vue@latest"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"
+        integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+<script src="/travelRequest/SiteAssets/TR/js/batchexecutor.js"></script>
+<script src="/travelRequest/SiteAssets/TR/js/approvals.js"></script>

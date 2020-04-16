@@ -12,7 +12,9 @@ const app = new Vue({
     el: '#app',
     data: {
         loading: false,
+        approver:true,
         user: _spPageContextInfo.userId,
+        position:'',
         itinerary: [{
             from: '',
             to: '',
@@ -153,18 +155,24 @@ function getDays(start, end) {
     batchRequest.endpoint = lstUrl + "('PerDiem')/items?$select=Title,Amount&$top=2000";
     batchRequest.headers = {'accept': 'application/json;odata=nometadata'};
     commands.push({id: batchExecutor.loadRequest(batchRequest), title: "PerDiem"});
+    batchRequest = new BatchRequest();
+    batchRequest.endpoint = _spPageContextInfo.webAbsoluteUrl + "/_api/SP.UserProfiles.PeopleManager/GetMyProperties?&$select=UserProfileProperties,DirectReports";
+    batchRequest.headers = {'accept': 'application/json;odata=nometadata'};
+    commands.push({id: batchExecutor.loadRequest(batchRequest), title: "Profile"});
 
     batchExecutor.executeAsync().done(function (result) {
         $.each(result, function (k, v) {
             let command = $.grep(commands, function (command) {
                 return v.id === command.id;
             });
-            if (command[0].title == "PA") {
+            if (command[0].title === "PA") {
                 getBosses(v.result.result.value);
-            } else if (command[0].title == "BudgetCodes") {
+            } else if (command[0].title === "BudgetCodes") {
                 getBudgetCodes(v.result.result.value);
-            } else if (command[0].title == "PerDiem") {
+            } else if (command[0].title === "PerDiem") {
                 getPerDiems(v.result.result.value);
+            }else if (command[0].title === "Profile") {
+                getProfile(v.result.result);
             }
 
         });
@@ -172,6 +180,16 @@ function getDays(start, end) {
         onError(err);
     });
 }());
+
+function getProfile(d) {
+    app.approver = d.DirectReports.length > 0;
+    for (let i = 0; i < d.UserProfileProperties.length; i++) {
+        if (d[i].Key == "SPS-JobTitle"){
+            app.position = d[i].Value;
+            break;
+        }
+    }
+}
 
 function getBosses(d) {
     let bolst = [];
@@ -194,9 +212,14 @@ function getBosses(d) {
 
 function getBudgetCodes(d) {
     let blst = [];
+    let approver = false;
     d.forEach((j) => {
         blst.push(j);
+        if(j.Manager.Id === _spPageContextInfo.userId){
+            approver = true;
+        }
     });
+    app.approver = approver;
     app.budget_codes.push(...blst);
     blst = [];
 }

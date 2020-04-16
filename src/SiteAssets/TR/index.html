@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
       integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-<link rel="stylesheet" href="https://unpkg.com/vue-select@latest/dist/vue-select.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
 <link rel="stylesheet" href="/travelRequest/SiteAssets/TR/css/fontello.css">
 
@@ -8,23 +8,32 @@
     <div class="container">
         <div class="card" id="app">
             <div class="card-header">
-                <h3 class="card-title">Fill Out Travel Form</h3>
+                <h3 class="card-title">Fill Out Travel Form |
+                    <a href="https://africanwildlife.sharepoint.com/travelRequest/Pages/approvals.aspx" v-if="approver">Approvals</a>
+                </h3>
             </div>
             <div id="v-wrapper" class="card-body">
                 <h5>Traveller Information</h5>
                 <hr>
                 <div class="row">
+                    <div class="form-group col-sm-6 col-md-4">
+                        <label>Username</label>
+                        <input v-model="_spPageContextInfo.userDisplayName" type="text" class="form-control" readonly>
+                    </div>
+                    <div class="form-group col-sm-6 col-md-4">
+                        <label>Job Title</label>
+                        <input v-model="position" type="text" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-4"></div>
                     <template v-if="assistant">
                         <div class="form-group col-sm-6 col-md-4">
-                            <label>User</label>
-                            <v-select name="user" placeholder="Select user" v-validate="'required'"
-                                      v-model="user" label="title" value="id"
-                                      :class="{ 'is-invalid': errors.has('user')}"
-                                      :reduce="b => b.id" :options="bosses">
-                            </v-select>
+                            <label>Person Travelling</label>
+                            <select name="user" class="form-control" data-placeholder="Select user" v-validate="'required'" v-model="user">
+                                <option v-for="item in bosses" :value="item.value">{{item.label}}</option>
+                            </select>
                             <span class="invalid-feedback"> {{ errors.first('user') }}</span>
                         </div>
-                        <div class="col-sm-6 col-md-4"></div>
+                        <div class="col-sm-6 col-md-8"></div>
                     </template>
                     <div class="form-group col-md-8">
                         <label>Add Purpose/Reason For Travel</label>
@@ -41,39 +50,40 @@
                 <div class="row" v-for="(item, index) in itinerary">
                     <div class="form-group col-sm-6 col-lg">
                         <label>From</label>
-                        <v-select :name="'from_' + index" placeholder="Enter location" v-validate="'required'"
-                                  v-model="item.from" label="Title" data-vv-as="From"
-                                  :class="[{ 'is-invalid': errors.has('from_' + index) }]"
-                                  :reduce="b => b.Title" :options="per_diems">
-                        </v-select>
+                        <select :name="'from_' + index" data-placeholder="Enter location" v-validate="'required'"
+                                v-model="item.from" label="Title" data-vv-as="From" class="sel form-control"
+                                :class="[{ 'is-invalid': errors.has('from_' + index)}]">
+                            <option v-for="p in per_diems">{{p.Title}}</option>
+                        </select>
                         <span class="invalid-feedback"> {{ errors.first('from_' + index) }}</span>
                     </div>
                     <div class="form-group col-sm-6 col-lg">
                         <label>To</label>
-                        <v-select :name="'to_' + index" placeholder="Enter Destination" v-validate="'required'"
-                                  v-model="item.to" label="Title"  data-vv-as="To"
-                                  :class="[{ 'is-invalid': errors.has('to_' + index) }]"
-                                  :reduce="b => b.Title" :options="per_diems">
-                        </v-select>
+                        <select :name="'to_' + index" data-placeholder="Enter Destination" v-validate="'required'"
+                                v-model="item.to" label="Title"  data-vv-as="To" class="form-control"
+                                :class="[{ 'is-invalid': errors.has('to_' + index) }]">
+                            <option v-for="p in per_diems">{{p.Title}}</option>
+                        </select>
                         <span class="invalid-feedback"> {{ errors.first('to_' + index) }}</span>
                     </div>
                     <div class="form-group col-sm-6 col-lg">
                         <label>Budget Code</label>
-                        <v-select :name="'budget_code_' + index" placeholder="Budget Code" v-validate="'required'"
-                                  v-model="item.budget_code" label="Title" :options="budget_codes" data-vv-as="Budget Code"
-                                  :class="{ 'is-invalid': errors.has('budget_code_' + index)}">
-                        </v-select>
+                        <select :name="'budget_code_' + index" data-placeholder="Budget Code" v-validate="'required'"
+                                v-model="item.budget_code" data-vv-as="Budget Code" class="form-control"
+                                :class="[{ 'is-invalid': errors.has('budget_code_' + index)}]">
+                            <option v-for="p in budget_codes">{{p.Title}}</option>
+                        </select>
                         <span class="invalid-feedback">{{ errors.first('budget_code_' + index) }}</span>
                     </div>
                     <div class="form-group col-sm-6 col-lg">
-                        <label>Start Date</label>
+                        <label>Start Date &amp; Time</label>
                         <div class="input-group date" :id="'start_' + index" data-target-input="nearest">
                             <input type="text" class="form-control datetimepicker-input"
                                    :data-target="'#start_' + index"
                                    v-validate="'required'"
                                    :class="[{ 'is-invalid': errors.has('start_' + index) }]"
                                    :name="'start_' + index" data-vv-as="Start Date"
-                                   placeholder="MM-DD-YYYY h:i:s"
+                                   placeholder="DD/MM/YYYY h:i A"
                                    v-model="item.start">
                             <div class="input-group-append" :data-target="'#start_' + index" data-toggle="datetimepicker">
                                 <span class="input-group-text"><i class="icon-calendar"></i></span>
@@ -82,14 +92,14 @@
                         <span class="invalid-feedback">{{ errors.first('start_' + index) }}</span>
                     </div>
                     <div class="form-group col-sm-6 col-lg">
-                        <label>End Date</label>
+                        <label>End Date &amp; Time</label>
                         <div class="input-group date" :id="'end_' + index" data-target-input="nearest">
                             <input type="text" class="form-control datetimepicker-input"
                                    :data-target="'#end_' + index"
-                                   v-validate="'required'" format="MM-DD-YYYY h:i:s"
+                                   v-validate="'required'"
                                    :class="[{ 'is-invalid': errors.has('end_' + index) }]"
                                    :name="'end_' + index" data-vv-as="End Date"
-                                   placeholder="MM-DD-YYYY h:i:s"
+                                   placeholder="DD/MM/YYYY h:i:A"
                                    v-model="item.end">
                             <div class="input-group-append" :data-target="'#end_' + index" data-toggle="datetimepicker">
                                 <span class="input-group-text"><i class="icon-calendar"></i></span>
@@ -109,8 +119,8 @@
                 <hr>
                 <small class="text-danger"><em>All rates based on the USAID Per Diem standard rates for travel</em>
                 </small>
-                <div class="col-lg-4 my-2 bg-grey"><h6>Amount : $ <span v-text="total_amount"></span></h6></div>
-                <div class="col-sm-12">
+                <div class="col-lg-4 py-2 bg-grey"><h5>Amount : $ <span v-text="total_amount"></span></h5></div>
+                <div class="col-sm-12 mt-3">
                     <label>Do you require a travel advance?</label>
                 </div>
                 <div class="form-check-inline ml-3">
@@ -126,8 +136,13 @@
                 <div class="row" v-if="travel_advance == 1">
                     <div class="form-group mt-1 ml-2 col-sm-4">
                         <label>Amount</label>
-                        <input type="text" v-model="advance_amount" v-validate="'required'" placeholder="Advance Amount"
-                               class="form-control" :class="{ 'is-invalid': errors.has('advance_amount')}">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="text" v-model="advance_amount" name="advance_amount" v-validate="'required'" placeholder="Advance Amount"
+                                   class="form-control" :class="{ 'is-invalid': errors.has('advance_amount')}">
+                        </div>
                         <span v-if="errors.has('advance_amount')" class="invalid-feedback">
                             {{ errors.first('advance_amount') }}
                         </span>
@@ -137,7 +152,7 @@
                         <textarea v-model="advance_comment" class="form-control"></textarea>
                     </div>
                 </div>
-                <h5 class="mt-2">Logistic Details</h5>
+                <h5 class="mt-4">Logistic Details</h5>
                 <hr>
                 <div class="row">
                     <div class="col-lg-6">
@@ -166,7 +181,7 @@
                         </div>
                     </div>
                     <div class="col-lg-6">
-                        <div class="col-sm-12 mt-2">
+                        <div class="col-sm-12 mt-3">
                             <label>Do you require assistance with accommodation booking?</label>
                         </div>
                         <div class="form-check-inline ml-3">
@@ -193,7 +208,7 @@
                         </div>
                     </div>
                     <div class="col-lg-6">
-                        <div class="col-sm-12 mt-2">
+                        <div class="col-sm-12 mt-3">
                             <label>Do you require company vehicle with this trip?</label>
                         </div>
                         <div class="form-check-inline ml-3">
@@ -231,7 +246,7 @@
 <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js" integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/js/tempusdominus-bootstrap-4.min.js"></script>
-<script src="https://unpkg.com/vue-select@3.9.5/dist/vue-select.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
 <script src="/travelRequest/SiteAssets/TR/js/vee-validate.js"></script>
 <script src="/travelRequest/SiteAssets/TR/js/batchexecutor.js"></script>

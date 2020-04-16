@@ -1,99 +1,199 @@
+const lstUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle";
+const date_format = 'DD/MM/YYYY hh:mm A';
 const app = new Vue({
     el: '#app',
     data: {
         loading: false,
-        user: _spPageContextInfo.userId,
-        travels: []
+        show: false,
+        budget_manager:false,
+        supervisor:false,
+        travels: [],
+        modform: {
+            Traveller: {Title: ""},
+            Id: null,
+            TravelPurpose: "",
+            TravelAdvance: false,
+            TravelAmount: 0,
+            AdvanceComment: "",
+            AdvanceAmount: 0,
+            AirTicketBooking: false,
+            AirTicketBookingComment: "",
+            AccomodationBooking: false,
+            AccomodationBookingComment: "",
+            CompanyVehicle: false,
+            CompanyVehicleComment: "",
+            Status: "",
+            SupervisorId: {Title: ""},
+            SupervisorComment: "",
+            Created: ""
+        },
+        itineraries: []
     },
     methods: {
-        addDestination() {
-            this.itinerary.push({
-                from: '',
-                to: '',
-                budget_code: '',
-                start: null,
-                end: null,
-                amount: 0,
-                days: 0,
-                manager: null
+        toggle() {
+            this.show = !this.show;
+        },
+        loadTravels(d) {
+            let lst_travels = [];
+            d.forEach(x => {
+                lst_travels.push({
+                    'Id': x.Id,
+                    'TravelPurpose': x.TravelPurpose,
+                    'TravelAmount': x.TravelAmount,
+                    'Traveller': x.Traveller
+                });
             });
-            ++ind;
-            setPickers(ind);
+            this.travels.push(...lst_travels);
+            lst_travels = [];
         },
-        removeDestination() {
-            this.itinerary.pop();
+        openModal(id) {
+            loadTravelNItinerary(id);
+            this.toggle();
         },
-        validateForm() {
-            this.$validator.validateAll().then(valid => {
-                if (valid) {
-                    this.postForm();
-                }
-            });
-        },
-        postForm() {
-            this.loading = true;
-            let item = {
-                "__metadata": {"type": "SP.Data.TravelListItem"},
-                TravelPurpose: this.travel_purpose,
-                TravelAdvance: !!this.travel_advance,
-                TravelAmount: this.total_amount,
-                AdvanceAmount: parseFloat(this.advance_amount.replace(',', '')),
-                AdvanceComment: this.advance_comment,
-                AirTicketBooking: !!this.ticket_booking,
-                AirTicketBookingComment: this.ticket_booking_comment,
-                AccomodationBooking: !!this.accommodation_booking,
-                AccomodationBookingComment: this.accommodation_booking_comment,
-                CompanyVehicle: !!this.company_vehicle,
-                CompanyVehicleComment: this.company_vehicle_comment,
-                TravellerId: parseInt(this.user),
-                Status: 'Pending'
-            };
-            postJson("('Travel')/items", item, postItinerary, onError);
-        },
-        getRateByDestination(dest) {
-            let a = this.per_diems.filter(x => {
-                return x.Title === dest
-            });
-            if (a.length > 0) {
-                return a[0].Amount;
-            } else {
-                return 0;
-            }
-        },
-        getManagerByCode(b) {
-            let a = this.budget_codes.filter(x => {
-                return x.Title === b
-            });
-            if (a.length > 0) {
-                return a[0].Manager.Id;
-            } else {
-                return 0;
-            }
-        },
+        getBoolEquivalent(b) {
+            return b ? 'Yes' : 'No';
+        }
     },
     computed: {
-        assistant() {
-            return this.bosses.length > 0;
+        modalStyle() {
+            return this.show ?
+                { 'padding-left': '0px;', display: 'block' } : {};
         }
     },
-    watch: {
-        itinerary: {
-            handler: function (n) {
-                let amt = 0;
-                this.itinerary.forEach(x => {
-                    x.amount = this.getRateByDestination(x.to);
-                    x.days = getDays(x.start, x.end);
-                    amt += x.amount * x.days
-                });
-                if (isNaN(amt)) amt = 0;
-                this.total_amount = amt;
-            },
-            deep: true
-        },
-        advance_amount: function (newValue) {
-            const result = newValue.replace(/\D/g, "")
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            Vue.nextTick(() => this.advance_amount = result);
-        }
+    mounted() {
+        loadBatch();
     }
 });
+
+function restCalls(list_url, error, f) {
+    UpdateFormDigest(_spPageContextInfo.webServerRelativeUrl, this._spFormDigestRefreshInterval);
+    $.ajax({
+        url: lstUrl + list_url,
+        method: "GET",
+        headers: {
+            "Accept": "application/json; odata=verbose"
+        },
+        success: function (data) {
+            f(data.d.results)
+        },
+        error: function (error) {
+            onError(error)
+        }
+    })
+}
+
+function onError(error) {
+    Swal.fire("Error", error.responseText, "error");
+}
+
+function getTravel(d) {
+    const {
+        Traveller, Id, TravelPurpose, TravelAdvance,
+        TravelAmount, AdvanceComment, AdvanceAmount,
+        AirTicketBooking, AirTicketBookingComment, AccomodationBooking,
+        AccomodationBookingComment, CompanyVehicle,
+        CompanyVehicleComment, Status, Supervisor,
+        SupervisorComment, Created
+    } = d[0];
+    let n = {
+        Traveller, Id, TravelPurpose, TravelAdvance,
+        TravelAmount, AdvanceComment, AdvanceAmount,
+        AirTicketBooking, AirTicketBookingComment, AccomodationBooking,
+        AccomodationBookingComment, CompanyVehicle,
+        CompanyVehicleComment, Status, Supervisor,
+        SupervisorComment, Created
+    };
+    n.Created = moment(Created).format(date_format);
+    Object.assign(app.modform, n);
+}
+
+function getItinerary(d) {
+    let it_list = [];
+    d.forEach(j => {
+        it_list.push({
+            From: j.From, To: j.To, StartDate: moment(j.StartDate).format(date_format),
+            EndDate: moment(j.EndDate).format(date_format), BudgetCode: j.BudgetCode,
+            Days: j.Days, Amount: j.Amount, BudgetManager: j.BudgetManager.Title
+        });
+    });
+    app.itineraries.push(...it_list);
+    it_list = [];
+}
+
+function loadTravelNItinerary(id) {
+    let commands = [];
+    let batchExecutor = new RestBatchExecutor(_spPageContextInfo.webAbsoluteUrl, {'X-RequestDigest': $('#__REQUESTDIGEST').val()});
+    batchRequest = new BatchRequest();
+    batchRequest.endpoint = lstUrl + "('Travel')/items?&$select=*,Traveller/Title,Supervisor/Title&$expand=Traveller,Supervisor&$filter=Id eq " + id +"&$Top=1";
+    batchRequest.headers = {'accept': 'application/json;odata=nometadata'};
+    commands.push({id: batchExecutor.loadRequest(batchRequest), title: "Travel"});
+    batchRequest = new BatchRequest();
+    batchRequest.endpoint = lstUrl + "('Itinerary')/items?$select=*,BudgetManager/Title&$expand=BudgetManager&$filter=Id eq " + id;
+    batchRequest.headers = {'accept': 'application/json;odata=nometadata'};
+    commands.push({id: batchExecutor.loadRequest(batchRequest), title: "Itinerary"});
+
+    batchExecutor.executeAsync().done(function (result) {
+        $.each(result, function (k, v) {
+            let command = $.grep(commands, function (command) {
+                return v.id === command.id;
+            });
+            if (command[0].title == "Travel") {
+                getTravel(v.result.result.value);
+            }
+            if (command[0].title == "Itinerary") {
+                getItinerary(v.result.result.value);
+            }
+        });
+    }).fail(function (err) {
+        onError(err);
+    });
+}
+
+function loadBatch() {
+    let commands = [];
+    let batchExecutor = new RestBatchExecutor(_spPageContextInfo.webAbsoluteUrl, {'X-RequestDigest': $('#__REQUESTDIGEST').val()});
+    batchRequest = new BatchRequest();
+    batchRequest.endpoint = lstUrl
+        + "('Travel')/items?&$select=Id,TravelPurpose,TravelAmount,Traveller/Title&$expand=Traveller&$filter=SupervisorId eq "
+        + _spPageContextInfo.userId + " and Status eq 'Pending'";
+    batchRequest.headers = {'accept': 'application/json;odata=nometadata'};
+    commands.push({id: batchExecutor.loadRequest(batchRequest), title: "loadTravelSupervisor"});
+    batchRequest = new BatchRequest();
+    batchRequest.endpoint = lstUrl + "('Itinerary')/items?$select=TravelId&$filter=BudgetManagerId eq "
+        + _spPageContextInfo.userId + " and Status eq 'Pending'";
+    batchRequest.headers = {'accept': 'application/json;odata=nometadata'};
+    commands.push({id: batchExecutor.loadRequest(batchRequest), title: "BMTravels"});
+
+    batchExecutor.executeAsync().done(function (result) {
+        $.each(result, function (k, v) {
+            let command = $.grep(commands, function (command) {
+                return v.id === command.id;
+            });
+            if (command[0].title == "loadTravelSupervisor") {
+                let results = v.result.result.value;
+                app.supervisor = (results.length > 0);
+                app.loadTravels(results);
+            }
+            if (command[0].title == "BMTravels") {
+                let results = v.result.result.value;
+                app.budget_manager = true;
+                getTravelIds(results);
+            }
+        });
+    }).fail(function (err) {
+        onError(err);
+    });
+}
+
+function getTravelIds(d) {
+    const travel_ids = d.map(j => j.TravelId);
+    let filterString = "";
+    travel_ids.forEach(function (j) {
+        filterString += "TravelId eq " + j + " or "
+    });
+    if(filterString.length>0){
+        filterString =  filterString.substring(0, filterString.length-4);
+    }
+    restCalls("('Travel')/items?&$select=Id,TravelPurpose,TravelAmount,Traveller/Title&$expand=Traveller&$filter="
+        + filterString, "Fetch travel items failed", app.loadTravels);
+}
