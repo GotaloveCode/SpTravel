@@ -31,9 +31,9 @@
 .card-header,.modal-header{
     background-color: #ff6623;
     color:#fff;
-    /* font-weight: 100; */
 }
 .card-title,.modal-title{font-weight: 100;}
+.card-title a{ color: #fff; font-weight: 400}
 .bg-grey{ background: #c0c0c0;}
 #app, .datetimepicker-input, .select2-results__option, .form-control{font-size:12px;}
 @media (min-width: 992px){

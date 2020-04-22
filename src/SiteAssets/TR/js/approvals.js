@@ -52,7 +52,23 @@ const app = new Vue({
         },
         getBoolEquivalent(b) {
             return b ? 'Yes' : 'No';
+        },
+        multiply(a){
+            return a.Amount * a.Days;
         }
+    },
+    filters: {
+        toCurrency(value) {
+            if (typeof value !== "number") {
+                return value;
+            }
+            var formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0
+            });
+            return formatter.format(value);
+        },
     },
     computed: {
         modalStyle() {
@@ -128,7 +144,7 @@ function loadTravelNItinerary(id) {
     batchRequest.headers = {'accept': 'application/json;odata=nometadata'};
     commands.push({id: batchExecutor.loadRequest(batchRequest), title: "Travel"});
     batchRequest = new BatchRequest();
-    batchRequest.endpoint = lstUrl + "('Itinerary')/items?$select=*,BudgetManager/Title&$expand=BudgetManager&$filter=Id eq " + id;
+    batchRequest.endpoint = lstUrl + "('Itinerary')/items?$select=*,BudgetManager/Title&$expand=BudgetManager&$filter=TravelId eq " + id;
     batchRequest.headers = {'accept': 'application/json;odata=nometadata'};
     commands.push({id: batchExecutor.loadRequest(batchRequest), title: "Itinerary"});
 
@@ -155,7 +171,7 @@ function loadBatch() {
     batchRequest = new BatchRequest();
     batchRequest.endpoint = lstUrl
         + "('Travel')/items?&$select=Id,TravelPurpose,TravelAmount,Traveller/Title&$expand=Traveller&$filter=SupervisorId eq "
-        + _spPageContextInfo.userId + " and Status eq 'Pending'";
+        + _spPageContextInfo.userId + " and Status eq 'Pending'&$orderby=Id desc";
     batchRequest.headers = {'accept': 'application/json;odata=nometadata'};
     commands.push({id: batchExecutor.loadRequest(batchRequest), title: "loadTravelSupervisor"});
     batchRequest = new BatchRequest();
@@ -189,11 +205,11 @@ function getTravelIds(d) {
     const travel_ids = d.map(j => j.TravelId);
     let filterString = "";
     travel_ids.forEach(function (j) {
-        filterString += "TravelId eq " + j + " or "
+        filterString += "Id eq " + j + " or "
     });
     if(filterString.length>0){
         filterString =  filterString.substring(0, filterString.length-4);
     }
     restCalls("('Travel')/items?&$select=Id,TravelPurpose,TravelAmount,Traveller/Title&$expand=Traveller&$filter="
-        + filterString, "Fetch travel items failed", app.loadTravels);
+        + filterString +"&$orderby=Id desc", "Fetch travel items failed", app.loadTravels);
 }

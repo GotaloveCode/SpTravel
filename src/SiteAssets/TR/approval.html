@@ -29,7 +29,7 @@
                             <td>TR<span v-text="item.Id"></span></td>
                             <td v-text="item.Traveller.Title"></td>
                             <td v-text="item.TravelPurpose"></td>
-                            <td v-text="item.TravelAmount"></td>
+                            <td>{{ item.TravelAmount | toCurrency}}</td>
                             <td>
                                 <button class="btn btn-sm btn-primary" @click="openModal(item.Id)" type="button">View Details</button>
                             </td>
@@ -44,7 +44,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">TRAVEL REQUEST</h5>
+                    <h5 class="modal-title">TRAVEL REQUEST [<span v-text="modform.Id"></span>]</h5>
                     <button type="button" class="close text-white" @click="toggle">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -53,15 +53,17 @@
                     <h5>Traveller Information</h5>
                     <hr>
                     <div class="row">
-                        <div class="col-md-12"><span class="bold">TRAVEL ID: </span>
+                        <div class="col-md-12"><b>TRAVEL ID: </b>
                             <span v-text="modform.Id"></span>
+                            <br>
                         </div>
-                        <div class="col-md-3"><span class="bold">Traveller: </span><span
-                                v-text="modform.Traveller.Title"></span></div>
-                        <div class="col-md-3"><span class="bold">Date of Request: </span><span
-                                v-text="modform.Created"></span></div>
-                        <div class="col-md-6"><span class="bold">Reason for Travel: </span><span
-                                v-html="modform.TravelPurpose"></span></div>
+                        <div class="col-md-3"><b>Traveller: </b><br>
+                            <span v-text="modform.Traveller.Title"></span></div>
+                        <div class="col-md-3"><b>Date of Request: </b><br>
+                            <span v-text="modform.Created"></span></div>
+                        <div class="col-md-6"><b>Reason for Travel: </b><br>
+                            <p v-html="modform.TravelPurpose"></p>
+                        </div>
                     </div>
                     <h5>Trip Details</h5>
                     <hr>
@@ -78,6 +80,7 @@
                                         <th>Budget Code</th>
                                         <th>Budget Manager</th>
                                         <th>Days</th>
+                                        <th>DailyRate</th>
                                         <th>Amount</th>
                                     <tbody>
                                     <tr v-for="item in itineraries">
@@ -88,11 +91,12 @@
                                         <td class="text-right" v-text="item.BudgetCode"></td>
                                         <td class="text-right" v-text="item.BudgetManager"></td>
                                         <td class="text-right" v-text="item.Days"></td>
-                                        <td class="text-right" v-text="item.Amount"></td>
+                                        <td class="text-right">{{ item.Amount | toCurrency}}</td>
+                                        <th class="text-right">{{ multiply(item) | toCurrency}}</th>
                                     </tr>
                                     <tr>
-                                        <td colspan="7" class="text-right p-1"><b>Total:</b></td>
-                                        <td class="text-right bg-grey" v-text="modform.TravelAmount"></td>
+                                        <td colspan="8" class="text-right p-1"><b>Total:</b></td>
+                                        <td class="text-right bg-grey">{{ modform.TravelAmount | toCurrency}}</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -108,12 +112,11 @@
                         </div>
                         <template v-if="modform.TravelAdvance">
                             <div class="col-sm-4">
-                                <b>Amount: </b>
-                                <span v-text="modform.AdvanceAmount"></span>
+                                <b>Amount: </b> <span>{{ modform.AdvanceAmount | toCurrency}}</span>
                             </div>
                             <div class="col-sm-8">
-                                <b>Comment: </b>
-                                <span v-text="modform.AdvanceComment"></span>
+                                <b>Comment: </b><br>
+                                <p v-text="modform.AdvanceComment"></p>
                             </div>
                         </template>
                     </div>
@@ -125,8 +128,8 @@
                     </div>
                     <template v-if="modform.AirTicketBooking">
                         <div class="col-sm-12">
-                            <b>Comment: </b>
-                            <span v-text="modform.AirTicketBookingComment"></span>
+                            <b>Comment: </b><br>
+                            <p v-text="modform.AirTicketBookingComment"></p>
                         </div>
                     </template>
                     <div class="col-sm-12">
@@ -135,8 +138,8 @@
                     </div>
                     <template v-if="modform.AccomodationBooking">
                         <div class="col-sm-12">
-                            <b>Comment: </b>
-                            <span v-text="modform.AccomodationBookingComment"></span>
+                            <b>Comment: </b><br>
+                            <p v-text="modform.AccomodationBookingComment"></p>
                         </div>
                     </template>
                     <div class="col-sm-12">
@@ -145,8 +148,8 @@
                     </div>
                     <template v-if="modform.CompanyVehicle">
                         <div class="col-sm-12">
-                            <b>Comment: </b>
-                            <span v-text="modform.CompanyVehicleComment"></span>
+                            <b>Comment: </b><br>
+                            <p v-text="modform.CompanyVehicleComment"></p>
                         </div>
                     </template>
                     <h5>Supervisor Approval</h5>

@@ -1,6 +1,5 @@
 const lstUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle";
 const date_format = 'DD/MM/YYYY hh:mm A';
-Vue.use(VeeValidate);
 let ind = 0;
 const icons = {
     time: "icon-clock",
@@ -8,13 +7,19 @@ const icons = {
     up: "icon-up",
     down: "icon-down"
 };
+$.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
+    icons: icons,
+    format: date_format,
+    sideBySide: true
+});
+Vue.use(VeeValidate);
 const app = new Vue({
     el: '#app',
     data: {
         loading: false,
-        approver:true,
+        approver: true,
         user: _spPageContextInfo.userId,
-        position:'',
+        position: '',
         itinerary: [{
             from: '',
             to: '',
@@ -28,7 +33,7 @@ const app = new Vue({
         travel_purpose: '',
         total_amount: 0,
         travel_advance: 0,
-        advance_amount: 0,
+        advance_amount: null,
         advance_comment: null,
         budget_codes: [],
         per_diems: [],
@@ -67,12 +72,16 @@ const app = new Vue({
         },
         postForm() {
             this.loading = true;
+            let amt = "0";
+            if (this.advance_amount != null) {
+                amt = this.advance_amount?.replace(',', '');
+            }
             let item = {
                 "__metadata": {"type": "SP.Data.TravelListItem"},
                 TravelPurpose: this.travel_purpose,
                 TravelAdvance: !!this.travel_advance,
                 TravelAmount: this.total_amount,
-                AdvanceAmount: parseFloat(this.advance_amount.replace(',', '')),
+                AdvanceAmount: parseFloat(amt),
                 AdvanceComment: this.advance_comment,
                 AirTicketBooking: !!this.ticket_booking,
                 AirTicketBookingComment: this.ticket_booking_comment,
@@ -171,7 +180,7 @@ function getDays(start, end) {
                 getBudgetCodes(v.result.result.value);
             } else if (command[0].title === "PerDiem") {
                 getPerDiems(v.result.result.value);
-            }else if (command[0].title === "Profile") {
+            } else if (command[0].title === "Profile") {
                 getProfile(v.result.result);
             }
 
@@ -183,8 +192,9 @@ function getDays(start, end) {
 
 function getProfile(d) {
     app.approver = d.DirectReports.length > 0;
-    for (let i = 0; i < d.UserProfileProperties.length; i++) {
-        if (d[i].Key == "SPS-JobTitle"){
+    d = d.UserProfileProperties;
+    for (let i = 0; i < d.length; i++) {
+        if (d[i].Key == "SPS-JobTitle") {
             app.position = d[i].Value;
             break;
         }
@@ -215,7 +225,7 @@ function getBudgetCodes(d) {
     let approver = false;
     d.forEach((j) => {
         blst.push(j);
-        if(j.Manager.Id === _spPageContextInfo.userId){
+        if (j.Manager.Id === _spPageContextInfo.userId) {
             approver = true;
         }
     });
@@ -250,8 +260,8 @@ function postItinerary(data) {
             'TravelId': travel_id,
             'From': item.from,
             'To': item.to,
-            'StartDate': item.start,
-            'EndDate': item.end,
+            'StartDate': moment(item.start, date_format).toISOString(),
+            'EndDate': moment(item.end, date_format).toISOString(),
             'BudgetCode': item.budget_code,
             'BudgetManagerId': item.manager,
             'Amount': parseInt(item.amount),
@@ -302,8 +312,8 @@ function onError(error) {
 }
 
 function setPickers(x) {
-    $("#start_" + x).datetimepicker({icons, format: date_format, sideBySide: true});
-    $("#end_" + x).datetimepicker({icons, format: date_format, sideBySide: true, useCurrent: false});
+    $("#start_" + x).datetimepicker();
+    $("#end_" + x).datetimepicker({useCurrent: false});
     $(document).on('change.datetimepicker', '#start_' + x, function (e) {
         $('#end_' + x).datetimepicker('minDate', e.date);
         app.itinerary[x].start = e.date.format(date_format);
