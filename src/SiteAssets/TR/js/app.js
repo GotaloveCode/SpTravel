@@ -124,11 +124,20 @@ const app = new Vue({
         itinerary: {
             handler: function (n) {
                 let amt = 0;
-                this.itinerary.forEach(x => {
+                let it = this.itinerary;
+                let count = it.length;
+                let i = 0;
+                it.forEach(x => {
                     x.amount = this.getRateByDestination(x.to);
-                    x.days = getDays(x.start, x.end);
-                    amt += x.amount * x.days
+                    let d = getDays(x.start, x.end);
+
+                    if (i === 0) d -= reduceDaysBy(x.start);
+                    if (i === count - 1) d -= reduceDaysBy(x.end);
+                    x.days = d;
+                    amt += x.amount * x.days;
+                    i++;
                 });
+                Object.assign(this.itinerary,it);
                 if (isNaN(amt)) amt = 0;
                 this.total_amount = amt;
             },
@@ -141,6 +150,20 @@ const app = new Vue({
         }
     }
 });
+
+function reduceDaysBy(x) {
+    const f = 'hh:mm A';
+    const noon_date = moment('01/01/2000 11:59 AM', date_format);
+    const time_part = moment(x, date_format).format(f);
+    let new_date = '01/01/2000 ' + time_part;
+    new_date = moment(new_date, date_format);
+
+    if (new_date.isAfter(noon_date)) {
+        return 0.5
+    } else {
+        return 0;
+    }
+}
 
 function getDays(start, end) {
     let st = moment(start, date_format);
