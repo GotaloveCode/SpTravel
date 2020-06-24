@@ -125,15 +125,15 @@
                 </div>
                 <div class="form-check-inline ml-3">
                     <label class="form-check-label">
-                        <input type="radio" v-model="travel_advance" class="form-check-input" value="1">Yes
+                        <input type="radio" v-model="travel_advance" class="form-check-input" value="Yes">Yes
                     </label>
                 </div>
                 <div class="form-check-inline">
                     <label class="form-check-label">
-                        <input type="radio" v-model="travel_advance" class="form-check-input" value="0">No
+                        <input type="radio" v-model="travel_advance" class="form-check-input" value="No">No
                     </label>
                 </div>
-                <div class="row" v-if="travel_advance == 1">
+                <div class="row" v-if="travel_advance == 'Yes'">
                     <div class="form-group mt-1 ml-2 col-sm-4">
                         <label>Amount</label>
                         <div class="input-group">
@@ -157,78 +157,78 @@
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="col-sm-12">
-                            <label>Do you require assistance with air travel booking?</label>
+                            <label>Air travel booking?</label>
                         </div>
                         <div class="form-check-inline ml-3">
                             <label class="form-check-label">
-                                <input type="radio" name="ticket_booking" v-validate="'required|included:0,1'"
-                                       class="form-check-input" v-model="ticket_booking" value="1">Yes
+                                <input type="radio" name="ticket_booking" v-validate="'required|included:Yes,No'"
+                                       class="form-check-input" v-model="ticket_booking" value="Yes">Yes
                             </label>
                         </div>
                         <div class="form-check-inline">
                             <label class="form-check-label">
                                 <input type="radio" name="ticket_booking" class="form-check-input"
-                                       v-model="ticket_booking" value="0">No
+                                       v-model="ticket_booking" value="No">No
                             </label>
                         </div>
                         <span class="text-danger" v-if="errors.has('ticket_booking')">{{ errors.first('ticket_booking')}}</span>
                     </div>
                     <div class="col-lg-6">
-                        <div class="form-group col-md-8" v-if="ticket_booking==1">
-                            <label>Any other comments? (Leave a note for the team to review)</label>
+                        <div class="form-group col-md-8" v-if="ticket_booking=='Yes'">
+                            <label>Any other comments?</label>
                             <textarea name="ticket_booking_comment" v-model="ticket_booking_comment"
                                       class="form-control"></textarea>
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="col-sm-12 mt-3">
-                            <label>Do you require assistance with accommodation booking?</label>
+                            <label>Accommodation booking?</label>
                         </div>
                         <div class="form-check-inline ml-3">
                             <label class="form-check-label">
                                 <input type="radio" name="accommodation_booking" class="form-check-input"
                                        v-model="accommodation_booking"
-                                       value="1" v-validate="'required|included:0,1'">Yes
+                                       value="Yes" v-validate="'required|included:Yes,No'">Yes
                             </label>
                         </div>
                         <div class="form-check-inline">
                             <label class="form-check-label">
                                 <input type="radio" name="accommodation_booking" class="form-check-input"
                                        v-model="accommodation_booking"
-                                       value="0">No
+                                       value="No">No
                             </label>
                         </div>
                         <span class="text-danger" v-if="errors.has('accommodation_booking')">{{ errors.first('accommodation_booking')}}</span>
                     </div>
                     <div class="col-lg-6">
-                        <div class="form-group col-md-8" v-if="accommodation_booking==1">
-                            <label>Any other comments? (Leave a note for the team to review)</label>
+                        <div class="form-group col-md-8" v-if="accommodation_booking=='Yes'">
+                            <label>Any other comments?</label>
                             <textarea name="accommodation_booking_comment" v-model="accommodation_booking_comment"
                                       class="form-control"></textarea>
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="col-sm-12 mt-3">
-                            <label>Do you require company vehicle with this trip?</label>
+                            <label>Company vehicle with this trip?</label>
                         </div>
                         <div class="form-check-inline ml-3">
                             <label class="form-check-label">
                                 <input type="radio" name="company_vehicle" class="form-check-input"
-                                       v-validate="'required|included:0,1'"
-                                       v-model="company_vehicle" value="1">Yes
+                                       v-validate="'required|included:No,Yes'"
+                                       v-model="company_vehicle" value="Yes">Yes
                             </label>
                         </div>
                         <div class="form-check-inline">
                             <label class="form-check-label">
                                 <input type="radio" name="company_vehicle" class="form-check-input"
-                                       v-model="company_vehicle" value="0">No
+                                       v-model="company_vehicle" value="No">No
                             </label>
                         </div>
                         <span class="text-danger" v-if="errors.has('company_vehicle')">{{ errors.first('company_vehicle')}}</span>
                     </div>
                     <div class="col-lg-6">
-                        <div class="form-group col-md-8" v-if="company_vehicle==1">
-                            <label>Any other comments? (Leave a note for the team to review)</label>
+                        <div class="form-group col-md-8" v-if="company_vehicle=='Yes'">
+                            <label>Any other comments?</label>
                             <textarea name="company_vehicle_comment" v-model="company_vehicle_comment"
                                       class="form-control"></textarea>
                         </div>

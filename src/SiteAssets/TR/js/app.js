@@ -5,7 +5,11 @@ const icons = {
     time: "icon-clock",
     date: "icon-calendar",
     up: "icon-up",
-    down: "icon-down"
+    down: "icon-down",
+    previous: 'icon-left-open',
+    next: 'icon-right-open',
+    clear: 'icon-trash',
+    close: 'icon-times'
 };
 $.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
     icons: icons,
@@ -32,7 +36,7 @@ const app = new Vue({
         }],
         travel_purpose: '',
         total_amount: 0,
-        travel_advance: 0,
+        travel_advance: '',
         advance_amount: null,
         advance_comment: null,
         budget_codes: [],
@@ -74,23 +78,25 @@ const app = new Vue({
             this.loading = true;
             let amt = "0";
             if (this.advance_amount != null) {
-                amt = this.advance_amount?.replace(',', '');
+                amt = this.advance_amount.replace(',', '');
             }
             let item = {
                 "__metadata": {"type": "SP.Data.TravelListItem"},
                 TravelPurpose: this.travel_purpose,
-                TravelAdvance: !!this.travel_advance,
+                TravelAdvance: this.travel_advance,
                 TravelAmount: this.total_amount,
                 AdvanceAmount: parseFloat(amt),
                 AdvanceComment: this.advance_comment,
-                AirTicketBooking: !!this.ticket_booking,
+                AirTicketBooking: this.ticket_booking,
                 AirTicketBookingComment: this.ticket_booking_comment,
-                AccomodationBooking: !!this.accommodation_booking,
+                AccomodationBooking: this.accommodation_booking,
                 AccomodationBookingComment: this.accommodation_booking_comment,
-                CompanyVehicle: !!this.company_vehicle,
+                CompanyVehicle: this.company_vehicle,
                 CompanyVehicleComment: this.company_vehicle_comment,
                 TravellerId: parseInt(this.user),
-                Status: 'Pending'
+                Status: 'Pending',
+                Count: this.itinerary.length,
+                ReviewCount:0
             };
             postJson("('Travel')/items", item, postItinerary, onError);
         },

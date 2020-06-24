@@ -50,9 +50,6 @@ const app = new Vue({
             loadTravelNItinerary(id);
             this.toggle();
         },
-        getBoolEquivalent(b) {
-            return b ? 'Yes' : 'No';
-        },
         multiply(a){
             return a.Amount * a.Days;
         }

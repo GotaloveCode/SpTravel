@@ -108,9 +108,9 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <b>Do you require a travel advance? </b>
-                            <span v-text="getBoolEquivalent(modform.TravelAdvance)"></span>
+                            <span v-text="modform.TravelAdvance"></span>
                         </div>
-                        <template v-if="modform.TravelAdvance">
+                        <template v-if="modform.TravelAdvance == 'Yes'">
                             <div class="col-sm-4">
                                 <b>Amount: </b> <span>{{ modform.AdvanceAmount | toCurrency}}</span>
                             </div>
@@ -124,9 +124,9 @@
                     <hr>
                     <div class="col-sm-12">
                         <b>Do you require assistance with air travel booking? </b>
-                        <span v-text="getBoolEquivalent(modform.AirTicketBooking)"></span>
+                        <span v-text="modform.AirTicketBooking"></span>
                     </div>
-                    <template v-if="modform.AirTicketBooking">
+                    <template v-if="modform.AirTicketBooking == 'Yes'">
                         <div class="col-sm-12">
                             <b>Comment: </b><br>
                             <p v-text="modform.AirTicketBookingComment"></p>
@@ -134,9 +134,9 @@
                     </template>
                     <div class="col-sm-12">
                         <b>Do you require assistance with accommodation booking? </b>
-                        <span v-text="getBoolEquivalent(modform.AccomodationBooking)"></span>
+                        <span v-text="modform.AccomodationBooking"></span>
                     </div>
-                    <template v-if="modform.AccomodationBooking">
+                    <template v-if="modform.AccomodationBooking  == 'Yes'">
                         <div class="col-sm-12">
                             <b>Comment: </b><br>
                             <p v-text="modform.AccomodationBookingComment"></p>
@@ -144,7 +144,7 @@
                     </template>
                     <div class="col-sm-12">
                         <b>Do you require company vehicle with this trip? </b>
-                        <span v-text="getBoolEquivalent(modform.CompanyVehicle)"></span>
+                        <span v-text="modform.CompanyVehicle"></span>
                     </div>
                     <template v-if="modform.CompanyVehicle">
                         <div class="col-sm-12">
